@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Explicitly allow your Netlify and local URLs
+// ✅ Allowed frontend URLs
 const allowedOrigins = [
   "http://localhost:5173",
   "https://wellpi.netlify.app"
@@ -18,6 +18,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
