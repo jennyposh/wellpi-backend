@@ -2,20 +2,22 @@ import express, { Application, Request, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+// ✅ Import routes
 import authRoutes from "./routes/authRoutes";
+import paymentRoutes from "./routes/paymentRoutes"; // 👈 Added this line
 
 dotenv.config();
 
 const app: Application = express();
 const port = process.env.PORT || 5000;
 
-// ✅ Define allowed origins (local + production)
+// ✅ Allowed origins
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://wellpi.netlify.app",
+  "http://localhost:5173", // local frontend
+  "https://wellpi.netlify.app", // deployed frontend
 ];
 
-// ✅ Configure CORS
+// ✅ Middleware
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -30,17 +32,18 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json()); // Parse JSON bodies
 
-// ✅ Routes
+// ✅ Register routes
 app.use("/api/auth", authRoutes);
+app.use("/api/payments", paymentRoutes); // 👈 Added payment route registration
 
-// ✅ Root route (optional, just to check connection)
+// ✅ Default route
 app.get("/", (req: Request, res: Response) => {
   res.send("Backend is running successfully 🚀");
 });
 
-// ✅ MongoDB Connection
+// ✅ Connect to MongoDB and start the server
 mongoose
   .connect(process.env.MONGO_URI as string)
   .then(() => {

@@ -1,60 +1,31 @@
-import { Router, Request, Response } from 'express';
-import { createPiPayment, completePiPayment, cancelPiPayment } from '../services/piService';
+import { Router } from "express";
+import {
+  createPayment,
+  completePayment,
+  cancelPayment,
+  verifyPayment
+} from "../controllers/paymentController";
 
 const router = Router();
 
 /**
  * ✅ Create Pi Payment
  */
-router.post('/create', async (req: Request, res: Response) => {
-  try {
-    const { amount, memo, metadata, uid } = req.body;
-
-    if (!amount || !memo) {
-      return res.status(400).json({ message: 'Amount and memo are required' });
-    }
-
-    const result = await createPiPayment({ amount, memo, metadata, uid });
-    res.status(201).json(result);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.post("/create", createPayment);
 
 /**
  * ✅ Complete Pi Payment
  */
-router.post('/complete', async (req: Request, res: Response) => {
-  try {
-    const { paymentId, txid } = req.body;
-
-    if (!paymentId || !txid) {
-      return res.status(400).json({ message: 'paymentId and txid are required' });
-    }
-
-    const result = await completePiPayment(paymentId, txid);
-    res.status(200).json(result);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.post("/complete", completePayment);
 
 /**
  * ✅ Cancel Pi Payment
  */
-router.post('/cancel', async (req: Request, res: Response) => {
-  try {
-    const { paymentId } = req.body;
+router.post("/cancel", cancelPayment);
 
-    if (!paymentId) {
-      return res.status(400).json({ message: 'paymentId is required' });
-    }
-
-    const result = await cancelPiPayment(paymentId);
-    res.status(200).json(result);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-});
+/**
+ * ✅ Verify Pi Payment
+ */
+router.post("/verify", verifyPayment);
 
 export default router;
