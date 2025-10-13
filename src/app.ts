@@ -1,14 +1,18 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import connectDB from "./utils/db"; // ✅ Added this line for MongoDB connection
 
 // ✅ Import all route modules
 import authRoutes from "./routes/authRoutes";
-import paymentRoutes from "./routes/paymentRoutes"; // 👈 Added this line
+import paymentRoutes from "./routes/paymentRoutes";
 
 dotenv.config();
 
 const app = express();
+
+// ✅ Connect to MongoDB immediately when app starts
+connectDB();
 
 // ✅ Allowed frontend URLs
 const allowedOrigins = [
@@ -41,7 +45,7 @@ app.use(express.json());
 
 // ✅ API Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/payments", paymentRoutes); // 👈 Added this route
+app.use("/api/payments", paymentRoutes);
 
 // ✅ Default route for testing backend status
 app.get("/", (req: Request, res: Response) => {

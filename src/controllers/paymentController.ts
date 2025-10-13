@@ -1,103 +1,83 @@
 // src/controllers/paymentController.ts
 import { Request, Response } from "express";
+import {
+  createPiPayment,
+  completePiPayment,
+  cancelPiPayment,
+  verifyPiPayment,
+} from "../services/piService";
 
-// 🧩 MOCK PAYMENT CONTROLLER (for hackathon testing/demo)
 export const createPayment = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { amount, memo = "", metadata, uid } = req.body;
+    const { amount, memo = "", metadata = {}, uid } = req.body;
 
     if (typeof amount !== "number" || !uid) {
-      res.status(400).json({ success: false, message: "amount (number) and uid are required" });
+      res.status(400).json({ message: "amount (number) and uid are required" });
       return;
     }
 
-    console.log("💰 [Mock] Creating Pi payment...");
-    console.log("Amount:", amount);
-    console.log("Memo:", memo);
-    console.log("UID:", uid);
-
-    // Simulate successful payment
-    const mockPayment = {
-      id: "mock_" + Date.now(),
-      amount,
-      memo,
-      uid,
-      metadata,
-      status: "completed",
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log("✅ [Mock] Payment created successfully");
-    res.status(201).json({
-      success: true,
-      message: "✅ Mock Pi payment successful",
-      data: mockPayment,
-    });
-  } catch (err) {
-    console.error("❌ [Mock] Error creating payment:", (err as Error).message);
-    res.status(500).json({ success: false, message: "Mock payment failed" });
+    const result = await createPiPayment({ amount, memo, metadata, uid });
+    res.status(201).json(result);
+  } catch (err: unknown) {
+    console.error("createPayment error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ message });
   }
 };
 
-// ✅ Complete Payment (simulated)
 export const completePayment = async (req: Request, res: Response): Promise<void> => {
   try {
     const { paymentId, txid } = req.body;
-
     if (!paymentId || !txid) {
-      res.status(400).json({ success: false, message: "paymentId and txid are required" });
+      res.status(400).json({ message: "paymentId and txid are required" });
       return;
     }
-
-    console.log("🔄 [Mock] Completing payment:", paymentId);
-    res.status(200).json({
-      success: true,
-      message: "✅ Mock payment completed",
-      data: { paymentId, txid, status: "completed" },
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: (err as Error).message });
+    const result = await completePiPayment(paymentId, txid);
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    console.error("completePayment error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ message });
   }
 };
 
-// ✅ Cancel Payment (simulated)
 export const cancelPayment = async (req: Request, res: Response): Promise<void> => {
   try {
     const { paymentId } = req.body;
-
     if (!paymentId) {
-      res.status(400).json({ success: false, message: "paymentId is required" });
+      res.status(400).json({ message: "paymentId is required" });
       return;
     }
-
-    console.log("🚫 [Mock] Cancelling payment:", paymentId);
-    res.status(200).json({
-      success: true,
-      message: "🟡 Mock payment cancelled",
-      data: { paymentId, status: "cancelled" },
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: (err as Error).message });
+    const result = await cancelPiPayment(paymentId);
+    res.status(200).json(result);
+  } catch (err: unknown) {
+    console.error("cancelPayment error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ message });
   }
 };
 
-// ✅ Verify Payment (simulated)
 export const verifyPayment = async (req: Request, res: Response): Promise<void> => {
   try {
     const { paymentId } = req.body;
-
     if (!paymentId) {
-      res.status(400).json({ success: false, message: "paymentId is required" });
+      res.status(400).json({ message: "paymentId is required" });
       return;
     }
 
-    console.log("🔍 [Mock] Verifying payment:", paymentId);
-    res.status(200).json({
-      success: true,
-      message: "✅ Mock payment verified (sandbox)",
-      data: { paymentId, status: "completed" },
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: (err as Error).message });
+    const result = await verifyPiPayment(paymentId);
+
+    // result shape depends on Pi API; handle safely:
+    const status = (result && (result as any).status) || (result as any).state || "unknown";
+
+    if (status === "completed" || status === "succeeded") {
+      res.status(200).json({ success: true, message: "Payment verified", data: result });
+    } else {
+      res.status(400).json({ success: false, message: "Payment not completed", data: result });
+    }
+  } catch (err: unknown) {
+    console.error("verifyPayment error:", err);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ message });
   }
 };

@@ -8,16 +8,19 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const connectDB = async () => {
     try {
-        const mongoURI = process.env.MONGO_URI;
-        if (!mongoURI) {
-            throw new Error('MONGO_URI is not defined in .env file');
-        }
-        await mongoose_1.default.connect(mongoURI);
-        console.log('✅ MongoDB Connected Successfully');
+        // ✅ Use .env MONGO_URI or fallback to local MongoDB
+        const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/wellpi";
+        console.log("🟡 Connecting to MongoDB...");
+        await mongoose_1.default.connect(mongoURI, {
+            // Optional modern config for stability
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        });
+        console.log("✅ MongoDB Connected Successfully!");
     }
     catch (error) {
-        console.error('❌ MongoDB Connection Failed:', error);
-        process.exit(1); // Exit process if DB connection fails
+        console.error("❌ MongoDB Connection Failed:", error.message);
+        process.exit(1); // Exit the app if DB connection fails
     }
 };
 exports.default = connectDB;
