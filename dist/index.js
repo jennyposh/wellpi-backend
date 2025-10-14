@@ -10,6 +10,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 // ✅ Import routes
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
+const piRoutes_1 = __importDefault(require("./routes/piRoutes")); // ✅ Added and properly spaced
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
@@ -31,24 +32,24 @@ app.use((0, cors_1.default)({
     },
     credentials: true,
 }));
-app.use(express_1.default.json()); // Parse JSON request bodies
+app.use(express_1.default.json()); // ✅ Parse JSON request bodies
 // ✅ Register routes
 app.use("/api/auth", authRoutes_1.default);
 app.use("/api/payments", paymentRoutes_1.default);
+app.use("/api/pi", piRoutes_1.default); // ✅ New Pi webhook routes for approval & completion
 // ✅ Default route
 app.get("/", (req, res) => {
     res.status(200).send("🚀 WellPi Backend is running successfully!");
 });
-// ✅ Health check route for judges
+// ✅ Health check route for monitoring or testing
 app.get("/api/status", async (req, res) => {
     try {
-        // Check MongoDB connection state
         const mongoStatus = mongoose_1.default.connection.readyState === 1 ? "connected" : "disconnected";
         res.status(200).json({
             success: true,
             message: "✅ WellPi backend is running smoothly!",
             mongoDB: mongoStatus,
-            piConnection: "active", // You can update this dynamically if needed
+            piConnection: "active", // Optionally make dynamic later
             timestamp: new Date(),
         });
     }
@@ -82,7 +83,7 @@ mongoose_1.default
     .connect(mongoURI)
     .then(() => {
     console.log("✅ Connected to MongoDB successfully");
-    // ✅ Start the server only after DB connection
+    // ✅ Start the server after successful DB connection
     app.listen(port, () => {
         console.log(`🚀 Server running on port ${port}`);
     });

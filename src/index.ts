@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 // ✅ Import routes
 import authRoutes from "./routes/authRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
+import piRoutes from "./routes/piRoutes"; // ✅ Added and properly spaced
 
 dotenv.config();
 
@@ -33,27 +34,29 @@ app.use(
   })
 );
 
-app.use(express.json()); // Parse JSON request bodies
+app.use(express.json()); // ✅ Parse JSON request bodies
 
 // ✅ Register routes
 app.use("/api/auth", authRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/pi", piRoutes); // ✅ New Pi webhook routes for approval & completion
 
 // ✅ Default route
 app.get("/", (req: Request, res: Response) => {
   res.status(200).send("🚀 WellPi Backend is running successfully!");
 });
-// ✅ Health check route for judges
+
+// ✅ Health check route for monitoring or testing
 app.get("/api/status", async (req: Request, res: Response) => {
   try {
-    // Check MongoDB connection state
-    const mongoStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    const mongoStatus =
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected";
 
     res.status(200).json({
       success: true,
       message: "✅ WellPi backend is running smoothly!",
       mongoDB: mongoStatus,
-      piConnection: "active", // You can update this dynamically if needed
+      piConnection: "active", // Optionally make dynamic later
       timestamp: new Date(),
     });
   } catch (error) {
@@ -89,7 +92,7 @@ mongoose
   .then(() => {
     console.log("✅ Connected to MongoDB successfully");
 
-    // ✅ Start the server only after DB connection
+    // ✅ Start the server after successful DB connection
     app.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
     });
@@ -97,4 +100,4 @@ mongoose
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err);
     process.exit(1);
-  });
+  });
